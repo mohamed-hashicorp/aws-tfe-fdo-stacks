@@ -1,6 +1,6 @@
 ## EC2 Instance Component
 
-# --- Data Sources to capture the latest Ubuntu AMI ---
+# --- Data Sources ---
 data "aws_ami" "ubuntu_noble" {
   most_recent = true
 
@@ -71,8 +71,6 @@ resource "aws_iam_instance_profile" "ssm" {
   role = aws_iam_role.ssm.name
 }
 
-
-
 # --- EC2 Instance ---
 resource "aws_instance" "this" {
   ami                         = data.aws_ami.ubuntu_noble.id
@@ -84,9 +82,9 @@ resource "aws_instance" "this" {
   key_name                    = null
 
   root_block_device {
-    volume_size = 100 # in GiB
+    volume_size = 100
     volume_type = "gp3"
-    encrypted   = true # optional but recommended
+    encrypted   = true
   }
 
   user_data_base64 = base64gzip(templatefile("${path.module}/cloud-init.tftpl", {

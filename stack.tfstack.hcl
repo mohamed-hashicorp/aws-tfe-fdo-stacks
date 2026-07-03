@@ -9,23 +9,7 @@ required_providers {
     source  = "hashicorp/random"
     version = "~> 3.6"
   }
-    acme = {
-      source  = "vancluever/acme"
-      version = "~> 2.0"
-    }
-    tls = {
-      source  = "hashicorp/tls"
-      version = "~> 4.0"
-    }
 }
-
-provider "acme" "main" {
-  config {
-    server_url = var.acme_server_url
-  }
-}
-
-provider "tls" "main" {}
 
 # Variables
 
@@ -156,17 +140,24 @@ provider "random" "main" {}
 
 component "network" {
   source = "./components/network"
+  providers = {
+    aws = provider.aws.main
+  }
   inputs = {
-    name                = var.name
-    hosted_zone_name    = var.hosted_zone_name
-    email               = var.email
-    region              = var.region
-    dns_record          = var.dns_record
+    name             = var.name
+    hosted_zone_name = var.hosted_zone_name
+    email            = var.email
+    region           = var.region
+    dns_record       = var.dns_record
+    acme_server_url  = var.acme_server_url
   }
 }
 
 component "database" {
   source = "./components/database"
+  providers = {
+    aws = provider.aws.main
+  }
   inputs = {
     name                   = var.name
     rds_password           = var.rds_password
@@ -179,6 +170,9 @@ component "database" {
 
 component "compute" {
   source = "./components/compute"
+  providers = {
+    aws = provider.aws.main
+  }
   inputs = {
     name                    = var.name
     instance_type           = var.instance_type
@@ -208,6 +202,9 @@ component "compute" {
 
 component "storage" {
   source = "./components/storage"
+  providers = {
+    aws = provider.aws.main
+  }
   inputs = {
     s3_bucket_name = var.s3_bucket_name
     iam_role_name  = component.compute.iam_role_name

@@ -72,25 +72,23 @@ locals {
   }
 }
 
-# ACME account private key (used to register with Let's Encrypt)
+# ACME account private key
 resource "tls_private_key" "acme_account" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-# ACME registration (your Let's Encrypt account)
+# ACME registration
 resource "acme_registration" "this" {
   account_key_pem = tls_private_key.acme_account.private_key_pem
   email_address   = var.email
 }
 
-# ACME certificate for your FQDN
+# ACME certificate
 resource "acme_certificate" "server" {
   account_key_pem = acme_registration.this.account_key_pem
   common_name     = var.dns_record
 
-  # Default is 30 days – cert will only be renewed when it's close to expiring,
-  # not on every apply. :contentReference[oaicite:1]{index=1}
   min_days_remaining = 30
 
   dns_challenge {
