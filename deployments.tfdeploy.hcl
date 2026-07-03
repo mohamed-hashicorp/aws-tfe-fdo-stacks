@@ -20,7 +20,7 @@ deployment "development" {
     acme_server_url = "https://acme-staging-v02.api.letsencrypt.org/directory"
 
     # Email for ACME/Let's Encrypt
-    email = "admin@example.com"
+    email = "Mohamed.Ayman@ibm.com"
 
     # TFE Configuration
     # IMPORTANT: override tfe_license, tfe_admin_password, tfe_encryption_password,
