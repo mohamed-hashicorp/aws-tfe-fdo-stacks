@@ -1,9 +1,3 @@
-# Stacks
-stack {
-  name        = "aws-tfe-fdo-es-si-stacks"
-  description = "Terraform Enterprise FDO Docker ES stacks"
-}
-
 # Required providers
 required_providers {
   aws = {
