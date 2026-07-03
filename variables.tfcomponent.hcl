@@ -27,6 +27,7 @@ variable "tfe_license" {
   type        = string
   description = "TFE license"
   sensitive   = true
+  ephemeral   = true
 }
 
 variable "tfe_hostname" {

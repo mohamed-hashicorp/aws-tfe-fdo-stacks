@@ -9,6 +9,7 @@ packages:
   - zip
   - unzip
   - ca-certificates
+  - awscli
 
 write_files:
   - path: "/etc/terraform-enterprise/certs/cert.pem"
@@ -29,12 +30,6 @@ write_files:
     content: |
       ${bundle_certs}
 
-  - path: "/etc/terraform-enterprise/registry-token"
-    permissions: "0600"
-    owner: "root:root"
-    content: |
-      ${tfe_license}
-
   - path: "/etc/terraform-enterprise/config.yaml"
     permissions: "0644"
     owner: "root:root"
@@ -45,7 +40,7 @@ write_files:
         tfe:
           image: images.releases.hashicorp.com/hashicorp/terraform-enterprise:${tfe_image_tag}
           environment:
-            TFE_LICENSE: "${tfe_license}"
+            TFE_LICENSE: "$${TFE_LICENSE}"
             TFE_HOSTNAME: "${tfe_hostname}"
             TFE_ENCRYPTION_PASSWORD: "${tfe_encryption_password}"
             TFE_OPERATIONAL_MODE: "external"
@@ -122,6 +117,34 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
+  - path: "/usr/local/bin/fetch-secrets.sh"
+    permissions: "0755"
+    owner: "root:root"
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+
+      LOG_FILE="/var/log/tfe-bootstrap.log"
+      exec > >(tee -a "$LOG_FILE") 2>&1
+
+      echo "==== Fetching TFE license from Secrets Manager ===="
+
+      LICENSE="$(aws secretsmanager get-secret-value \
+        --secret-id "${tfe_license_secret_arn}" \
+        --region "${region}" \
+        --query SecretString \
+        --output text)"
+
+      umask 077
+
+      # Registry token used by 'docker login' to pull the TFE image.
+      printf '%s' "$LICENSE" > /etc/terraform-enterprise/registry-token
+
+      # .env consumed by docker compose to populate TFE_LICENSE in config.yaml.
+      printf 'TFE_LICENSE=%s\n' "$LICENSE" > /etc/terraform-enterprise/.env
+
+      echo "==== TFE license fetched ===="
 
   - path: "/usr/local/bin/docker-install.sh"
     permissions: "0755"
@@ -220,5 +243,6 @@ runcmd:
   - mkdir -p /etc/terraform-enterprise/certs
   - mkdir -p ${data_dir}
   - bash /usr/local/bin/docker-install.sh
+  - bash /usr/local/bin/fetch-secrets.sh
   - bash /usr/local/bin/tfe-bootstrap.sh
   - bash /usr/local/bin/tfe-admin.sh

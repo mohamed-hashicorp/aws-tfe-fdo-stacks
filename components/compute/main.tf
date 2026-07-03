@@ -71,6 +71,37 @@ resource "aws_iam_instance_profile" "ssm" {
   role = aws_iam_role.ssm.name
 }
 
+# --- TFE license in Secrets Manager ---
+# The license value arrives as an ephemeral variable (sourced from an HCP
+# variable set). It is written via the write-only "secret_string_wo" argument,
+# so it never lands in Terraform state. The instance fetches it at boot.
+resource "aws_secretsmanager_secret" "tfe_license" {
+  name                    = "${local.resource_name}-tfe-license"
+  description             = "TFE license for ${local.resource_name}"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "tfe_license" {
+  secret_id                = aws_secretsmanager_secret.tfe_license.id
+  secret_string_wo         = var.tfe_license
+  secret_string_wo_version = 1
+}
+
+# Allow the instance role to read the license secret at boot.
+resource "aws_iam_role_policy" "secrets_access" {
+  name = "${local.resource_name}-secrets-access"
+  role = aws_iam_role.ssm.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["secretsmanager:GetSecretValue"]
+      Resource = aws_secretsmanager_secret.tfe_license.arn
+    }]
+  })
+}
+
 # --- EC2 Instance ---
 resource "aws_instance" "this" {
   ami                         = data.aws_ami.ubuntu_noble.id
@@ -92,7 +123,7 @@ resource "aws_instance" "this" {
     private_key             = indent(6, var.acme_private_key_pem)
     bundle_certs            = indent(6, var.acme_issuer_pem)
     email                   = var.email
-    tfe_license             = var.tfe_license
+    tfe_license_secret_arn  = aws_secretsmanager_secret.tfe_license.arn
     tfe_hostname            = var.dns_record
     tfe_admin_password      = var.tfe_admin_password
     tfe_encryption_password = var.tfe_encryption_password

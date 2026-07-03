@@ -13,7 +13,8 @@ variable "email" {
 variable "tfe_license" {
   description = "TFE license file"
   sensitive   = true
-}   
+  ephemeral   = true
+}
 
 variable "tfe_hostname" { 
   description = "TFE hostname"
