@@ -30,8 +30,3 @@ output "acme_issuer_pem" {
   value       = acme_certificate.server.issuer_pem
   sensitive   = true
 }
-
-output "route53_record_fqdn" {
-  description = "Fully qualified domain name of the Route53 record"
-  value       = aws_route53_record.server.fqdn
-}

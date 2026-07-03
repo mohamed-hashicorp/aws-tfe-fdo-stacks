@@ -2,7 +2,9 @@ component "network" {
   source = "./components/network"
 
   providers = {
-    aws = provider.aws.main
+    aws  = provider.aws.main
+    tls  = provider.tls.main
+    acme = provider.acme.main
   }
 
   inputs = {
