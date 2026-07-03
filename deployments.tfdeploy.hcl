@@ -50,7 +50,7 @@ deployment "development" {
     tfe_license             = var.tfe_license
     tfe_admin_password      = var.tfe_admin_password
     tfe_encryption_password = var.tfe_encryption_password
-    tfe_image_tag           = "v202505-1"
+    tfe_image_tag           = "2.0.3"
 
     # TFE Directories
     certs_dir = "/etc/terraform-enterprise/certs"
