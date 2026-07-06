@@ -7,7 +7,6 @@
 store "varset" "secrets" {
   id       = "varset-shzk7VwtSUorrQea" # <-- your variable set ID
   category = "terraform"
-  ephemeral = true
 }
 
 
