@@ -7,6 +7,7 @@
 store "varset" "secrets" {
   id       = "varset-shzk7VwtSUorrQea" # <-- your variable set ID
   category = "terraform"
+  ephemeral = true
 }
 
 
@@ -41,7 +42,7 @@ deployment "development" {
     # IMPORTANT: override tfe_license, tfe_admin_password, tfe_encryption_password,
     # and rds_password with sensitive values via the TFE stack Variables UI
     tfe_hostname            = "aws-tfe-fdo-stacks1.mohamed-abdelbaset.sbx.hashidemos.io"
-    tfe_license             = store.varset.secrets.tfe_license
+    tfe_license             = store.varset.secrets.stable.tfe_license
     tfe_admin_password      = "Mystrongpassword123"
     tfe_encryption_password = "Mystrongpassword123"
     tfe_image_tag           = "2.0.3"
